@@ -60,7 +60,3 @@ class SparkStreamingAppMonitor(private val ssc:StreamingContext ) extends Thread
     }
 
 }
-
-object SparkStreamingAppMonitor {
-
-}

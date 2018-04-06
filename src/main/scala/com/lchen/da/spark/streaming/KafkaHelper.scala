@@ -132,7 +132,3 @@ class KafkaHelper(kafkaParams:Map[String, String]) {
     }
 
 }
-
-object KafkaHelper {
-
-}
