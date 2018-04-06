@@ -1,4 +1,4 @@
-package com.lchen.da.util.impala;
+package com.lchen.da.fastmap;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -8,7 +8,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
-import com.lchen.da.udf.FastMapSeek;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -224,7 +223,7 @@ public class FastMapStructure {
 		map.put("1", 1);
 		map.put("true", true);
 		map.put("陈磊", "哈罗");
-		map.put("冯宇", 123);
+		map.put("李四", 123);
 
 		String fcts = fms.encodeToUTF8String(map);
 		System.out.println(BytesUtil.toStringFormat(fms.totalBytes));

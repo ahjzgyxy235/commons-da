@@ -1,7 +1,5 @@
-package com.lchen.da.udf;
+package com.lchen.da.fastmap;
 
-import com.lchen.da.util.impala.BytesUtil;
-import com.lchen.da.util.impala.FastMapStructure;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.log4j.Logger;
 

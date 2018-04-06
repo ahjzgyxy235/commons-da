@@ -1,4 +1,4 @@
-package com.lchen.da.util.impala;
+package com.lchen.da.fastmap;
 
 import java.util.Map;
 
