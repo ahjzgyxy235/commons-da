@@ -6,9 +6,17 @@
   
 赠人玫瑰 手留余香！    
 
-### release note  
+### release note
 
-#### commons-da-0.11 --- 2017-11-20
+#### commons-da-0.14 --- 2017-10-13
+1. 增加fastmap自定义数据结构编解码实现，以及快速查找UDF代码
+
+
+#### commons-da-0.13 --- 2017-07-01
+1. 增加了spark streaming offset自助管理代码
+2. 增加了spark streaming gracefully stop monitor代码
+
+#### commons-da-0.11 --- 2017-05-20
 1. 增加sloth相关UDF、UDAF模板
 2. 增加web来源站点一二级分类UDF函数
 3. 增加impala client代码，支持refresh table 等DDL操作
@@ -95,16 +103,12 @@ select bucketby("1012", "e", "event789");            // code track事件
 2. 增加RowKeyPolicy，内置了多种hbase常用rowkey设计规则，支持业务方自定义组装rowkey
 3. 增加KerberosAuthentication工具类，支持代码层完成kerberos认证动作
 
-
-### git  
-https://g.hz.netease.com/dap/commons-da.git  
-ssh://git@g.hz.netease.com:22222/dap/commons-da.git
   
 ### maven  
 
 ```
 <dependency>  
-    <groupId>com.netease.da</groupId> 
+    <groupId>com.lchen.da</groupId>
     <artifactId>commons-da</artifactId> 
     <version>${lastest_version}</version> 
 </dependency>
