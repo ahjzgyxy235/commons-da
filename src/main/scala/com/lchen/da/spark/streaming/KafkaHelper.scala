@@ -7,11 +7,12 @@ import org.slf4j.{Logger, LoggerFactory}
 /**
   * kafka offset helper
   *
-  * get or commit offsets
+  * get or commit offsets to kafka, not zookeeper
   *
   * metadata.broker.list       -- required
-  * auto.offset.reset          -- optional, default `largest`
-  * auto.create.topics.enable  -- optional, default `true`
+  * auto.offset.reset          -- optional, default latest
+  * auto.create.topics.enable  -- optional, default true
+  * enable.auto.commit         -- optional, default true but set false now
   *
   * Created by hzchenlei1.
   */
@@ -20,9 +21,6 @@ class KafkaHelper(kafkaParams:Map[String, String]) {
     val logger: Logger = LoggerFactory.getLogger(classOf[KafkaHelper])
     val kc = new KafkaCluster(kafkaParams)
 
-    /*
-     * get start offset for a group
-     */
     def getFromOffsets(topics:Set[String], groupId:String): Map[TopicAndPartition, Long] ={
         if(null==topics || topics.isEmpty)  return null
         if(null==groupId || "".equals(groupId)) return null
@@ -51,9 +49,6 @@ class KafkaHelper(kafkaParams:Map[String, String]) {
         tps_startOffsets
     }
 
-    /*
-     * commit offsets to kafka by rdd offset range
-     */
     def setConsumerOffsets(groupId:String, offsetRanges:Array[OffsetRange]): Unit ={
         var tps = Map[TopicAndPartition, Long]()
         for(range <- offsetRanges){
@@ -62,16 +57,13 @@ class KafkaHelper(kafkaParams:Map[String, String]) {
         setConsumerOffsets(groupId, tps)
     }
 
-    /*
-     * commit offsets to kafka directly
-     */
     def setConsumerOffsets(groupId:String, tps:Map[TopicAndPartition, Long]): Unit ={
         kc.setConsumerOffsets(groupId, tps)
     }
 
     private def createStartOffsetsForNewGroup(tps:Set[TopicAndPartition], groupId:String): Map[TopicAndPartition, Long] ={
         logger.info("Create start offsets for a new group: "+groupId)
-        val startFlag = kafkaParams.getOrElse("auto.offset.reset", "largest").toLowerCase
+        val startFlag = kafkaParams.getOrElse("auto.offset.reset", "latest").toLowerCase
         getLeaderOffset(tps, startFlag)
     }
 
@@ -79,7 +71,7 @@ class KafkaHelper(kafkaParams:Map[String, String]) {
                                                 tps:Set[TopicAndPartition], groupId:String): Map[TopicAndPartition, Long] ={
         logger.info("Create start offsets for a exist group: "+groupId)
 
-        val startFlag = kafkaParams.getOrElse("auto.offset.reset", "largest").toLowerCase
+        val startFlag = kafkaParams.getOrElse("auto.offset.reset", "latest").toLowerCase
         var tps_startOffset = Map[TopicAndPartition, Long]()
 
         for(tp <- tps){
@@ -93,7 +85,7 @@ class KafkaHelper(kafkaParams:Map[String, String]) {
                 }else{
                     // invalid expired offset
                     logger.warn("Found a invalid expired partition offset: {} and auto.offset.reset：{}", tp.partition ,startFlag)
-                    if("smallest".equals(startFlag))
+                    if("earliest".equals(startFlag))
                         tps_startOffset += (tp -> range.apply(tp)._1)
                     else
                         tps_startOffset += (tp -> range.apply(tp)._2)
@@ -110,7 +102,7 @@ class KafkaHelper(kafkaParams:Map[String, String]) {
 
     private def getLeaderOffset(tps:Set[TopicAndPartition], autoOffsetReset:String): Map[TopicAndPartition, Long] ={
         val leaderOffsetRanges = getLeaderOffsetRange(tps)
-        if("smallest".equals(autoOffsetReset.toLowerCase()))
+        if("earliest".equals(autoOffsetReset.toLowerCase()))
             for (range <- leaderOffsetRanges) yield range._1 -> range._2._1
         else
             for (range <- leaderOffsetRanges) yield range._1 -> range._2._2
@@ -118,7 +110,7 @@ class KafkaHelper(kafkaParams:Map[String, String]) {
 
     /*
      * return offset range of every leader partition
-     *  (tp -> (smallestOffset, largestOffset))
+     *  (tp -> (earliestOffset, latestOffset))
      */
     private def getLeaderOffsetRange(tps:Set[TopicAndPartition]): Map[TopicAndPartition, (Long, Long)] ={
         val minOffsets = kc.getEarliestLeaderOffsets(tps).right.get
